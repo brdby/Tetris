@@ -54,7 +54,7 @@ public class Figure {
         int[][] newCoords = new int[coords[0].length][coords.length];
         for (int i = 0; i < coords.length; i++) {
             for (int j = 0; j < coords[i].length; j++) {
-                newCoords[coords[i].length-j][i] = coords[i][j];
+                newCoords[coords[i].length-j-1][i] = coords[i][j];
             }
         }
         coords = newCoords;
@@ -102,6 +102,24 @@ public class Figure {
         for (Tile tile : tiles){
             for (int i = 0; i < coords.length; i++){
                 if (tile.getY() == maxY) return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean checkRightWall(int maxX){
+        for (Tile tile : tiles){
+            for (int i = 0; i < coords.length; i++){
+                if (tile.getX() == maxX) return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean checkLeftWall(int maxX){
+        for (Tile tile : tiles){
+            for (int i = 0; i < coords.length; i++){
+                if (tile.getX() == 0) return false;
             }
         }
         return true;

@@ -2,6 +2,7 @@ package com.haskellish.graphics;
 
 import com.haskellish.engine.Core;
 import com.haskellish.engine.Figure;
+import com.haskellish.engine.Tile;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,9 +22,9 @@ public class TetrisComponent extends JComponent {
         g.setColor(Color.RED);
         Graphics2D g2 = (Graphics2D) g;
 
-        game.getFigures().forEach(figure -> {
-            figure.getTiles().forEach(tile -> {
-                switch (tile.getType()){
+        for (Figure figure : game.getFigures()) {
+            for (Tile tile : figure.getTiles()) {
+                switch (tile.getType()) {
                     case Figure.I: {
                         g2.setColor(Color.CYAN);
                         break;
@@ -52,11 +53,12 @@ public class TetrisComponent extends JComponent {
                         g2.setColor(Color.RED);
                         break;
                     }
-                    default: g2.setColor(Color.BLACK);
+                    default:
+                        g2.setColor(Color.BLACK);
                 }
-                g2.fill(new Rectangle2D.Double(tile.getX()*TILE_SIZE, tile.getY()*TILE_SIZE, TILE_SIZE, TILE_SIZE));
-            });
-        });
+                g2.fill(new Rectangle2D.Double(tile.getX() * TILE_SIZE, tile.getY() * TILE_SIZE, TILE_SIZE, TILE_SIZE));
+            }
+        }
     }
 
 }

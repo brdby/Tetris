@@ -7,19 +7,21 @@ public class Core {
     public static final int INITIAL_X = 5;
     public static final int INITIAL_Y = 0;
 
-    public static final int MAX_X = 20;
-    public static final int MAX_Y = 20;
+    public static final int MAX_X = 9;
+    public static final int MAX_Y = 19;
 
     private Timer timer = new Timer();
     private ArrayList<Figure> figures = new ArrayList<>();
     private Queue<Figure> figureQueue = new ArrayDeque<>();
+    private Figure activeFigure;
     private Random r = new Random();
 
     public Core(){
         //setting first figures
         figureQueue.add(genFigure(INITIAL_X, INITIAL_Y));
         figureQueue.add(genFigure(INITIAL_X, INITIAL_Y));
-        figures.add(figureQueue.poll());
+        activeFigure = figureQueue.poll();
+        figures.add(activeFigure);
 
         start();
     }
@@ -28,8 +30,15 @@ public class Core {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
+                //change active figure
+                if (figureFall() == 0){
+                    activeFigure = figureQueue.poll();
+                    figureQueue.add(genFigure(INITIAL_X, INITIAL_Y));
+                    figures.add(activeFigure);
+                }
+            }
 
-                //move all figures
+            private int figureFall(){
                 int movedFigures = 0;
                 for (Figure figure : figures){
                     if (figure.checkFloor(MAX_Y)){
@@ -47,18 +56,36 @@ public class Core {
                         }
                     }
                 }
-
-                //change active figure
-                if (movedFigures == 0){
-                    figureQueue.add(genFigure(INITIAL_X, INITIAL_Y));
-                    figures.add(figureQueue.poll());
-                }
+                return movedFigures;
             }
         }, 0, 1000);
     }
 
     public void stop(){
         timer.cancel();
+    }
+
+    public void moveActiveFigure(int x, int y){
+        if (x > 0 && activeFigure.checkRightWall(MAX_X)) activeFigure.move(x, 0);
+        else if (x < 0 && activeFigure.checkLeftWall(MAX_X)) activeFigure.move(x, 0);
+
+        if (y > 0 && activeFigure.checkFloor(MAX_Y)) {
+            int[][] coords = activeFigure.getLowerCoords();
+            boolean canMove = true;
+            for (Figure f : figures){
+                if (f != activeFigure){
+                    canMove = f.checkCoords(coords);
+                    if (!canMove) break;
+                }
+            }
+            if (canMove) {
+                activeFigure.move(0, y);
+            }
+        }
+    }
+
+    public void rotateActiveFigure(){
+        activeFigure.rotate();
     }
 
     public Figure genFigure(int x, int y){
