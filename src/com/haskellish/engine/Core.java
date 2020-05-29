@@ -1,5 +1,7 @@
 package com.haskellish.engine;
 
+import com.haskellish.Main;
+
 import java.util.*;
 
 public class Core {
@@ -16,7 +18,7 @@ public class Core {
     private Figure activeFigure;
     private Random r = new Random();
 
-    public Core(){
+    public Core() {
         //setting first figures
         figureQueue.add(genFigure(INITIAL_X, INITIAL_Y));
         figureQueue.add(genFigure(INITIAL_X, INITIAL_Y));
@@ -26,34 +28,31 @@ public class Core {
         start();
     }
 
-    public void start(){
+    public void start() {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 //change active figure
-                if (figureFall() == 0){
+                if (figureFall() == 0) {
                     activeFigure = figureQueue.poll();
                     figureQueue.add(genFigure(INITIAL_X, INITIAL_Y));
                     figures.add(activeFigure);
                 }
             }
 
-            private int figureFall(){
+            private int figureFall() {
                 int movedFigures = 0;
-                for (Figure figure : figures){
-                    if (figure.checkFloor(MAX_Y)){
-                        int[][] coords = figure.getLowerCoords();
-                        boolean canMove = true;
-                        for (Figure f : figures){
-                            if (f != figure){
-                                canMove = f.checkCoords(coords);
-                                if (!canMove) break;
-                            }
+                for (Figure figure : figures) {
+                    int[][] coords = figure.getLowerCoords();
+                    boolean canMove = true;
+                    for (Figure f : figures) {
+                        if (f != figure) {
+                            canMove = f.checkCoords(coords);
+                            if (!canMove) break;
                         }
-                        if (canMove) {
-                            figure.move(0, 1);
-                            movedFigures++;
-                        }
+                    }
+                    if (canMove) {
+                        if (figure.move(0, 1, MAX_X, MAX_Y)) movedFigures++;
                     }
                 }
                 return movedFigures;
@@ -61,34 +60,34 @@ public class Core {
         }, 0, 1000);
     }
 
-    public void stop(){
+    public void stop() {
         timer.cancel();
     }
 
-    public void moveActiveFigure(int x, int y){
-        if (x > 0 && activeFigure.checkRightWall(MAX_X)) activeFigure.move(x, 0);
-        else if (x < 0 && activeFigure.checkLeftWall(MAX_X)) activeFigure.move(x, 0);
+    public void moveActiveFigure(int x, int y) {
+        int[][] lowerCoords = activeFigure.getLowerCoords();
+        int[][] rightCoords = activeFigure.getRightCoords();
+        int[][] leftCoords = activeFigure.getLeftCoords();
 
-        if (y > 0 && activeFigure.checkFloor(MAX_Y)) {
-            int[][] coords = activeFigure.getLowerCoords();
-            boolean canMove = true;
-            for (Figure f : figures){
-                if (f != activeFigure){
-                    canMove = f.checkCoords(coords);
-                    if (!canMove) break;
-                }
+        boolean canMove = true;
+        for (Figure f : figures) {
+            if (f != activeFigure) {
+                if (y > 0) canMove = f.checkCoords(lowerCoords);
+                if (x > 0) canMove = f.checkCoords(rightCoords);
+                if (x < 0) canMove = f.checkCoords(leftCoords);
+                if (!canMove) break;
             }
-            if (canMove) {
-                activeFigure.move(0, y);
-            }
+        }
+        if (canMove) {
+            activeFigure.move(x, y, MAX_X, MAX_Y);
         }
     }
 
-    public void rotateActiveFigure(){
+    public void rotateActiveFigure() {
         activeFigure.rotate();
     }
 
-    public Figure genFigure(int x, int y){
+    public Figure genFigure(int x, int y) {
         int fig = r.nextInt(Figure.Shape.values().length);
         return new Figure(Figure.Shape.values()[fig], x, y);
     }
