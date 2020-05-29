@@ -32,15 +32,16 @@ public class Figure {
         }
     }
 
-    private boolean stuck = false;
-
     private int[][] coords;
 
+    private int maxX, maxY;
     private ArrayList<Tile> tiles = new ArrayList<>();
     private int x,y;
 
-    Figure(Shape shape, int x, int y){
+    Figure(Shape shape, int maxX, int maxY, int x, int y){
         this.coords = shape.getCoords();
+        this.maxX = maxX;
+        this.maxY = maxY;
         this.x = x;
         this.y = y;
 
@@ -59,15 +60,37 @@ public class Figure {
                 newCoords[coords[i].length-j-1][i] = coords[i][j];
             }
         }
-        coords = newCoords;
+
+        //check for floor and walls
+        for (int i = 0; i < newCoords.length; i++){
+            for (int j = 0; j < newCoords[i].length; j++){
+                if (newCoords[i][j] != 0) {
+                    if (y + i > maxY) return;
+                    else if (x + j > maxX) {
+                        x--;
+                        rotate();
+                        return;
+                    }
+                    else if (x + j < 0) {
+                        x++;
+                        rotate();
+                        return;
+                    }
+                }
+            }
+        }
+
 
         //updating tiles
+        coords = newCoords;
         tiles = new ArrayList<>();
         for (int i = 0; i < coords.length; i++){
             for (int j = 0; j < coords[i].length; j++){
                 if (coords[i][j] != 0) tiles.add(new Tile(x + j, y + i, coords[i][j]));
             }
         }
+
+
     }
 
     public int[][] getLowerCoords(){
@@ -121,10 +144,10 @@ public class Figure {
         return true;
     }
 
-    public boolean move(int x, int y, int maxX, int maxY){
+    public boolean move(int x, int y){
         //check walls
-        if (y > 0) if (!checkFloor(maxY)) return false;
-        if (x > 0) if (!checkRightWall(maxX)) return false;
+        if (y > 0) if (!checkFloor()) return false;
+        if (x > 0) if (!checkRightWall()) return false;
         if (x < 0) if (!checkLeftWall()) return false;
 
         //move
@@ -137,7 +160,7 @@ public class Figure {
         return true;
     }
 
-    private boolean checkFloor(int maxY){
+    private boolean checkFloor(){
         for (Tile tile : tiles){
             for (int i = 0; i < coords.length; i++){
                 if (tile.getY() == maxY) return false;
@@ -146,7 +169,7 @@ public class Figure {
         return true;
     }
 
-    private boolean checkRightWall(int maxX){
+    private boolean checkRightWall(){
         for (Tile tile : tiles){
             for (int i = 0; i < coords.length; i++){
                 if (tile.getX() == maxX) return false;
@@ -162,14 +185,6 @@ public class Figure {
             }
         }
         return true;
-    }
-
-    public boolean isStuck() {
-        return stuck;
-    }
-
-    public void setStuck(boolean stuck) {
-        this.stuck = stuck;
     }
 
     public ArrayList<Tile> getTiles() {

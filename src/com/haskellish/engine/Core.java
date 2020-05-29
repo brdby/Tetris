@@ -1,7 +1,5 @@
 package com.haskellish.engine;
 
-import com.haskellish.Main;
-
 import java.util.*;
 
 public class Core {
@@ -34,9 +32,7 @@ public class Core {
             public void run() {
                 //change active figure
                 if (figureFall() == 0) {
-                    activeFigure = figureQueue.poll();
-                    figureQueue.add(genFigure(INITIAL_X, INITIAL_Y));
-                    figures.add(activeFigure);
+                    changeActiveFigure();
                 }
             }
 
@@ -48,16 +44,24 @@ public class Core {
                     for (Figure f : figures) {
                         if (f != figure) {
                             canMove = f.checkCoords(coords);
-                            if (!canMove) break;
+                            if (!canMove) {
+                                break;
+                            }
                         }
                     }
                     if (canMove) {
-                        if (figure.move(0, 1, MAX_X, MAX_Y)) movedFigures++;
+                        if (figure.move(0, 1)) movedFigures++;
                     }
                 }
                 return movedFigures;
             }
         }, 0, 1000);
+    }
+
+    private void changeActiveFigure() {
+        activeFigure = figureQueue.poll();
+        figureQueue.add(genFigure(INITIAL_X, INITIAL_Y));
+        figures.add(activeFigure);
     }
 
     public void stop() {
@@ -69,18 +73,27 @@ public class Core {
         int[][] rightCoords = activeFigure.getRightCoords();
         int[][] leftCoords = activeFigure.getLeftCoords();
 
-        boolean canMove = true;
+        boolean canMove;
         for (Figure f : figures) {
             if (f != activeFigure) {
-                if (y > 0) canMove = f.checkCoords(lowerCoords);
-                if (x > 0) canMove = f.checkCoords(rightCoords);
-                if (x < 0) canMove = f.checkCoords(leftCoords);
-                if (!canMove) break;
+                if (y > 0){
+                    canMove = f.checkCoords(lowerCoords);
+                    if (!canMove) {
+                        changeActiveFigure();
+                        return;
+                    }
+                }
+                if (x > 0) {
+                    canMove = f.checkCoords(rightCoords);
+                    if (!canMove) return;
+                }
+                if (x < 0) {
+                    canMove = f.checkCoords(leftCoords);
+                    if (!canMove) return;
+                }
             }
         }
-        if (canMove) {
-            activeFigure.move(x, y, MAX_X, MAX_Y);
-        }
+        activeFigure.move(x, y);
     }
 
     public void rotateActiveFigure() {
@@ -89,7 +102,7 @@ public class Core {
 
     public Figure genFigure(int x, int y) {
         int fig = r.nextInt(Figure.Shape.values().length);
-        return new Figure(Figure.Shape.values()[fig], x, y);
+        return new Figure(Figure.Shape.values()[fig], MAX_X, MAX_Y, x, y);
     }
 
     public ArrayList<Figure> getFigures() {
