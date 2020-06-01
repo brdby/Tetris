@@ -53,7 +53,7 @@ public class Figure {
         }
     }
 
-    Figure(int[][] coords, int maxX, int maxY, int x, int y){
+    private Figure(int[][] coords, int maxX, int maxY, int x, int y){
         this.coords = coords;
         this.maxX = maxX;
         this.maxY = maxY;
@@ -67,14 +67,25 @@ public class Figure {
         }
     }
 
-    public void rotate() {
-        //updating coords
-        int[][] newCoords = new int[coords[0].length][coords.length];
-        for (int i = 0; i < coords.length; i++) {
-            for (int j = 0; j < coords[i].length; j++) {
-                newCoords[coords[i].length - j - 1][i] = coords[i][j];
+    public int[][] checkRotateCoords(){
+        int[][] newCoords = getRotateCoords();
+
+        int[][] rotateCoords = new int[tiles.size()][2];
+        int counter = 0;
+        for (int i = 0; i < newCoords.length; i++) {
+            for (int j = 0; j < newCoords[i].length; j++) {
+                if (newCoords[i][j] != 0) {
+                    rotateCoords[counter][0] = x+j;
+                    rotateCoords[counter++][1] = y+i;
+                }
             }
         }
+        return rotateCoords;
+    }
+
+    public void rotate() {
+        //updating coords
+        int[][] newCoords = getRotateCoords();
 
         //check for floor and walls
         for (int i = 0; i < newCoords.length; i++) {
@@ -102,6 +113,16 @@ public class Figure {
                 if (coords[i][j] != 0) tiles.add(new Tile(x + j, y + i, coords[i][j]));
             }
         }
+    }
+
+    private int[][] getRotateCoords(){
+        int[][] newCoords = new int[coords[0].length][coords.length];
+        for (int i = 0; i < coords.length; i++) {
+            for (int j = 0; j < coords[i].length; j++) {
+                newCoords[coords[i].length - j - 1][i] = coords[i][j];
+            }
+        }
+        return newCoords;
     }
 
     public int[][] getLowerCoords() {

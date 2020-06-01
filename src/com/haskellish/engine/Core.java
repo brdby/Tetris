@@ -1,6 +1,7 @@
 package com.haskellish.engine;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Core {
@@ -13,7 +14,7 @@ public class Core {
 
     private Timer timer = new Timer();
     private CopyOnWriteArrayList<Figure> figures = new CopyOnWriteArrayList<Figure>();
-    private Queue<Figure> figureQueue = new ArrayDeque<>();
+    private Queue<Figure> figureQueue = new ConcurrentLinkedQueue<>();
     private Figure activeFigure;
     private Random r = new Random();
 
@@ -33,7 +34,6 @@ public class Core {
             public void run() {
                 //change active figure
                 if (figureFall() == 0) {
-                    lineClear();
                     changeActiveFigure();
                 }
             }
@@ -41,6 +41,7 @@ public class Core {
     }
 
     private void changeActiveFigure() {
+        lineClear();
         activeFigure = figureQueue.poll();
         figureQueue.add(genFigure(INITIAL_X, INITIAL_Y));
         figures.add(activeFigure);
@@ -61,7 +62,6 @@ public class Core {
                 if (y > 0) {
                     canMove = f.checkCoords(lowerCoords);
                     if (!canMove) {
-                        lineClear();
                         changeActiveFigure();
                         return;
                     }
@@ -80,7 +80,15 @@ public class Core {
     }
 
     public void rotateActiveFigure() {
-        activeFigure.rotate();
+        int[][] rotateCoords = activeFigure.checkRotateCoords();
+        boolean canRotate = true;
+        for (Figure f : figures){
+            if (f != activeFigure){
+                canRotate = f.checkCoords(rotateCoords);
+                if (!canRotate) break;
+            }
+        }
+        if (canRotate) activeFigure.rotate();
     }
 
     public Figure genFigure(int x, int y) {
