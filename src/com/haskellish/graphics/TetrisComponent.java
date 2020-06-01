@@ -10,7 +10,7 @@ import java.awt.geom.Rectangle2D;
 
 public class TetrisComponent extends JComponent {
 
-    public static final int TILE_SIZE = 40;
+    public static final int TILE_SIZE = 50;
 
     private Core game;
 

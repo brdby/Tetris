@@ -24,11 +24,11 @@ public class Tile {
         return y;
     }
 
-    public void setX(int x) {
+    void setX(int x) {
         this.x = x;
     }
 
-    public void setY(int y) {
+    void setY(int y) {
         this.y = y;
     }
 }

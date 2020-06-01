@@ -1,6 +1,7 @@
 package com.haskellish.engine;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Core {
 
@@ -11,7 +12,7 @@ public class Core {
     public static final int MAX_Y = 19;
 
     private Timer timer = new Timer();
-    private ArrayList<Figure> figures = new ArrayList<>();
+    private CopyOnWriteArrayList<Figure> figures = new CopyOnWriteArrayList<Figure>();
     private Queue<Figure> figureQueue = new ArrayDeque<>();
     private Figure activeFigure;
     private Random r = new Random();
@@ -32,30 +33,11 @@ public class Core {
             public void run() {
                 //change active figure
                 if (figureFall() == 0) {
+                    lineClear();
                     changeActiveFigure();
                 }
             }
-
-            private int figureFall() {
-                int movedFigures = 0;
-                for (Figure figure : figures) {
-                    int[][] coords = figure.getLowerCoords();
-                    boolean canMove = true;
-                    for (Figure f : figures) {
-                        if (f != figure) {
-                            canMove = f.checkCoords(coords);
-                            if (!canMove) {
-                                break;
-                            }
-                        }
-                    }
-                    if (canMove) {
-                        if (figure.move(0, 1)) movedFigures++;
-                    }
-                }
-                return movedFigures;
-            }
-        }, 0, 1000);
+        }, 0, 500);
     }
 
     private void changeActiveFigure() {
@@ -76,9 +58,10 @@ public class Core {
         boolean canMove;
         for (Figure f : figures) {
             if (f != activeFigure) {
-                if (y > 0){
+                if (y > 0) {
                     canMove = f.checkCoords(lowerCoords);
                     if (!canMove) {
+                        lineClear();
                         changeActiveFigure();
                         return;
                     }
@@ -105,11 +88,56 @@ public class Core {
         return new Figure(Figure.Shape.values()[fig], MAX_X, MAX_Y, x, y);
     }
 
-    public ArrayList<Figure> getFigures() {
+    public CopyOnWriteArrayList<Figure> getFigures() {
         return figures;
     }
 
     public Queue<Figure> getFigureQueue() {
         return figureQueue;
+    }
+
+    private int lineClear() {
+        int clearedLines = 0;
+        for (int i = MAX_Y; i >= 0; i--) {
+            int tilesCount = 0;
+            for (Figure f : figures) {
+                tilesCount += f.numOfTiles(i);
+            }
+            if (tilesCount == 0) break;
+            if (tilesCount == MAX_X + 1) {
+                for (Figure f : figures) {
+                    Figure oneTile = f.deleteTiles(i);
+                    if (oneTile != null) figures.add(oneTile);
+                    if (f.getTiles().size() == 0) figures.remove(f);
+                }
+                clearedLines++;
+            }
+        }
+        if (figureFall() != 0) {
+            int figureFall;
+            do {
+                figureFall = figureFall();
+            } while (figureFall != 0);
+            clearedLines += lineClear();
+        }
+        return clearedLines;
+    }
+
+    private int figureFall() {
+        int movedFigures = 0;
+        for (Figure figure : figures) {
+            int[][] coords = figure.getLowerCoords();
+            boolean canMove = true;
+            for (Figure f : figures) {
+                if (f != figure) {
+                    canMove = f.checkCoords(coords);
+                    if (!canMove) break;
+                }
+            }
+            if (canMove) {
+                if (figure.move(0, 1)) movedFigures++;
+            }
+        }
+        return movedFigures;
     }
 }

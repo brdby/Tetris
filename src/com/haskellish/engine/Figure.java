@@ -1,6 +1,7 @@
 package com.haskellish.engine;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Figure {
 
@@ -28,50 +29,63 @@ public class Figure {
         }
 
         public int[][] getCoords() {
-            return coords;
+            return Arrays.stream(coords).map(int[]::clone).toArray(int[][]::new);
         }
     }
 
     private int[][] coords;
 
     private int maxX, maxY;
-    private ArrayList<Tile> tiles = new ArrayList<>();
-    private int x,y;
+    private CopyOnWriteArrayList<Tile> tiles = new CopyOnWriteArrayList<Tile>();
+    private int x, y;
 
-    Figure(Shape shape, int maxX, int maxY, int x, int y){
+    Figure(Shape shape, int maxX, int maxY, int x, int y) {
         this.coords = shape.getCoords();
         this.maxX = maxX;
         this.maxY = maxY;
         this.x = x;
         this.y = y;
 
-        for (int i = 0; i < coords.length; i++){
-            for (int j = 0; j < coords[i].length; j++){
+        for (int i = 0; i < coords.length; i++) {
+            for (int j = 0; j < coords[i].length; j++) {
                 if (coords[i][j] != 0) tiles.add(new Tile(x + j, y + i, coords[i][j]));
             }
         }
     }
 
-    public void rotate(){
+    Figure(int[][] coords, int maxX, int maxY, int x, int y){
+        this.coords = coords;
+        this.maxX = maxX;
+        this.maxY = maxY;
+        this.x = x;
+        this.y = y;
+
+        for (int i = 0; i < coords.length; i++) {
+            for (int j = 0; j < coords[i].length; j++) {
+                if (coords[i][j] != 0) tiles.add(new Tile(x + j, y + i, coords[i][j]));
+            }
+        }
+    }
+
+    public void rotate() {
         //updating coords
         int[][] newCoords = new int[coords[0].length][coords.length];
         for (int i = 0; i < coords.length; i++) {
             for (int j = 0; j < coords[i].length; j++) {
-                newCoords[coords[i].length-j-1][i] = coords[i][j];
+                newCoords[coords[i].length - j - 1][i] = coords[i][j];
             }
         }
 
         //check for floor and walls
-        for (int i = 0; i < newCoords.length; i++){
-            for (int j = 0; j < newCoords[i].length; j++){
+        for (int i = 0; i < newCoords.length; i++) {
+            for (int j = 0; j < newCoords[i].length; j++) {
                 if (newCoords[i][j] != 0) {
                     if (y + i > maxY) return;
                     else if (x + j > maxX) {
                         x--;
                         rotate();
                         return;
-                    }
-                    else if (x + j < 0) {
+                    } else if (x + j < 0) {
                         x++;
                         rotate();
                         return;
@@ -80,26 +94,23 @@ public class Figure {
             }
         }
 
-
         //updating tiles
         coords = newCoords;
-        tiles = new ArrayList<>();
-        for (int i = 0; i < coords.length; i++){
-            for (int j = 0; j < coords[i].length; j++){
+        tiles = new CopyOnWriteArrayList<>();
+        for (int i = 0; i < coords.length; i++) {
+            for (int j = 0; j < coords[i].length; j++) {
                 if (coords[i][j] != 0) tiles.add(new Tile(x + j, y + i, coords[i][j]));
             }
         }
-
-
     }
 
-    public int[][] getLowerCoords(){
+    public int[][] getLowerCoords() {
         int[][] lowerCoords = new int[coords[0].length][2];
-        for (int i = 0; i < coords[0].length; i++){
-            for (int j = coords.length-1; j >= 0; j--){
+        for (int i = 0; i < coords[0].length; i++) {
+            for (int j = coords.length - 1; j >= 0; j--) {
                 if (coords[j][i] != 0) {
                     lowerCoords[i][0] = x + i;
-                    lowerCoords[i][1] = y + j+1;
+                    lowerCoords[i][1] = y + j + 1;
                     break;
                 }
             }
@@ -107,12 +118,12 @@ public class Figure {
         return lowerCoords;
     }
 
-    public int[][] getRightCoords(){
+    public int[][] getRightCoords() {
         int[][] lowerCoords = new int[coords.length][2];
-        for (int i = 0; i < coords.length; i++){
-            for (int j = coords[i].length-1; j >= 0; j--){
+        for (int i = 0; i < coords.length; i++) {
+            for (int j = coords[i].length - 1; j >= 0; j--) {
                 if (coords[i][j] != 0) {
-                    lowerCoords[i][0] = x + j+1;
+                    lowerCoords[i][0] = x + j + 1;
                     lowerCoords[i][1] = y + i;
                     break;
                 }
@@ -121,12 +132,12 @@ public class Figure {
         return lowerCoords;
     }
 
-    public int[][] getLeftCoords(){
+    public int[][] getLeftCoords() {
         int[][] lowerCoords = new int[coords.length][2];
-        for (int i = 0; i < coords.length; i++){
-            for (int j = 0; j < coords[i].length; j++){
+        for (int i = 0; i < coords.length; i++) {
+            for (int j = 0; j < coords[i].length; j++) {
                 if (coords[i][j] != 0) {
-                    lowerCoords[i][0] = x + j-1;
+                    lowerCoords[i][0] = x + j - 1;
                     lowerCoords[i][1] = y + i;
                     break;
                 }
@@ -135,24 +146,24 @@ public class Figure {
         return lowerCoords;
     }
 
-    public boolean checkCoords(int[][] coords){
-        for (Tile tile : tiles){
-            for (int i = 0; i < coords.length; i++){
+    public boolean checkCoords(int[][] coords) {
+        for (Tile tile : tiles) {
+            for (int i = 0; i < coords.length; i++) {
                 if (tile.getX() == coords[i][0] && tile.getY() == coords[i][1]) return false;
             }
         }
         return true;
     }
 
-    public boolean move(int x, int y){
+    public boolean move(int x, int y) {
         //check walls
         if (y > 0) if (!checkFloor()) return false;
         if (x > 0) if (!checkRightWall()) return false;
         if (x < 0) if (!checkLeftWall()) return false;
 
         //move
-        this.x+=x;
-        this.y+=y;
+        this.x += x;
+        this.y += y;
         tiles.forEach((tile -> {
             tile.setX(tile.getX() + x);
             tile.setY(tile.getY() + y);
@@ -160,34 +171,69 @@ public class Figure {
         return true;
     }
 
-    private boolean checkFloor(){
-        for (Tile tile : tiles){
-            for (int i = 0; i < coords.length; i++){
+    public int numOfTiles(int y) {
+        int tilesNum=0;
+        for (Tile t : tiles){
+            if (t.getY() == y) tilesNum++;
+        }
+        return tilesNum;
+    }
+
+    public Figure deleteTiles(int y) {
+        if (tiles.removeIf(tile -> tile.getY() == y)) {
+            Arrays.fill(coords[y - this.y], 0);
+        }
+
+        //check for divided tiles
+        if (!(tiles.size() <= 1)){
+            for (int i = 0; i < coords.length; i++) {
+                for (int j = 0; j < coords[i].length; j++) {
+                    if ((coords[i][j] != 0)
+                            && (j == 0 || coords[i][j - 1] == 0) && (j == coords[i].length - 1 || coords[i][j + 1] == 0)
+                            && (i == 0 || coords[i - 1][j] == 0) && (i == coords.length - 1 || coords[i + 1][j] == 0))
+                    {
+                        int tempType = coords[i][j];
+                        coords[i][j] = 0;
+                        for (Tile tile : tiles) if (tile.getX() == j+this.x && tile.getY() == i+this.y) tiles.remove(tile);
+                        int[][] oneTileCoords = new int[coords.length][coords[0].length];
+                        oneTileCoords[i][j] = tempType;
+                        return new Figure(oneTileCoords, maxX, maxY, this.x, this.y);
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private boolean checkFloor() {
+        for (Tile tile : tiles) {
+            for (int i = 0; i < coords.length; i++) {
                 if (tile.getY() == maxY) return false;
             }
         }
         return true;
     }
 
-    private boolean checkRightWall(){
-        for (Tile tile : tiles){
-            for (int i = 0; i < coords.length; i++){
+    private boolean checkRightWall() {
+        for (Tile tile : tiles) {
+            for (int i = 0; i < coords.length; i++) {
                 if (tile.getX() == maxX) return false;
             }
         }
         return true;
     }
 
-    private boolean checkLeftWall(){
-        for (Tile tile : tiles){
-            for (int i = 0; i < coords.length; i++){
+    private boolean checkLeftWall() {
+        for (Tile tile : tiles) {
+            for (int i = 0; i < coords.length; i++) {
                 if (tile.getX() == 0) return false;
             }
         }
         return true;
     }
 
-    public ArrayList<Tile> getTiles() {
+    public CopyOnWriteArrayList<Tile> getTiles() {
         return tiles;
     }
 }
