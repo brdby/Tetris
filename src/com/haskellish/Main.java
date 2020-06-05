@@ -9,7 +9,6 @@ public class Main {
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             MainFrame tetris = new MainFrame("Tetris");
-            tetris.startRendering();
         });
     }
 }

@@ -22,9 +22,9 @@ public class Figure {
         ZShape(new int[][]{{Z, Z, 0}, {0, Z, Z}}),
         TShape(new int[][]{{0, T, 0}, {T, T, T}});
 
-        private int[][] coords;
+        private final int[][] coords;
 
-        Shape(int coords[][]) {
+        Shape(int[][] coords) {
             this.coords = coords;
         }
 
@@ -35,8 +35,9 @@ public class Figure {
 
     private int[][] coords;
 
-    private int maxX, maxY;
-    private CopyOnWriteArrayList<Tile> tiles = new CopyOnWriteArrayList<Tile>();
+    private final int maxX;
+    private final int maxY;
+    private CopyOnWriteArrayList<Tile> tiles = new CopyOnWriteArrayList<>();
     private int x, y;
 
     Figure(Shape shape, int maxX, int maxY, int x, int y) {
@@ -169,8 +170,8 @@ public class Figure {
 
     public boolean checkCoords(int[][] coords) {
         for (Tile tile : tiles) {
-            for (int i = 0; i < coords.length; i++) {
-                if (tile.getX() == coords[i][0] && tile.getY() == coords[i][1]) return false;
+            for (int[] coord : coords) {
+                if (tile.getX() == coord[0] && tile.getY() == coord[1]) return false;
             }
         }
         return true;

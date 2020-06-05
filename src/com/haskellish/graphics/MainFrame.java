@@ -1,69 +1,46 @@
 package com.haskellish.graphics;
 
 import com.haskellish.engine.Core;
+import com.haskellish.scoring.Player;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.util.Timer;
-import java.util.TimerTask;
 
-public class MainFrame extends JFrame implements KeyListener {
+public class MainFrame extends JFrame {
 
-
-    Core core = new Core();
-    TetrisComponent game = new TetrisComponent(core);
-    Timer timer = new Timer();
+    Player player = new Player();
+    TetrisComponent game;
 
     public MainFrame(String name){
         super(name);
 
+        //initializing layout
+        Container mainContainer = this.getContentPane();
+        mainContainer.setLayout(new BorderLayout(0,0));
+        mainContainer.setBackground(Color.GRAY);
+
+        //initializing panels and buttons
+        JButton newGameButton = new JButton("New game");
+        JLabel score = new JLabel("Score: ");
+        score.setForeground(Color.white);
+
+        JPanel rightPanel = new JPanel();
+        rightPanel.setBackground(Color.darkGray);
+        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+        rightPanel.add(newGameButton);
+        rightPanel.add(score);
+        mainContainer.add(rightPanel, BorderLayout.EAST);
+
         //initializing game
-        add(game);
+        game = new TetrisComponent(player, score);
+        mainContainer.add(game, BorderLayout.CENTER);
+        game.addKeyListener(game);
+        game.startRendering();
+        game.setFocusable(true);
 
-        addKeyListener(this);
+        //initializing frame
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        Toolkit kit = Toolkit.getDefaultToolkit();
-        Dimension screensize = kit.getScreenSize();
-        setSize(screensize.width, screensize.height);
+        setSize((Core.MAX_X+1) * TetrisComponent.TILE_SIZE + 95, (Core.MAX_Y+1) * TetrisComponent.TILE_SIZE + 35);
         setVisible(true);
-    }
-
-    public void startRendering(){
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                game.repaint();
-            }
-        },0, 50);
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e) {
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        int key = e.getKeyCode();
-        switch (key){
-            case KeyEvent.VK_RIGHT:
-                core.moveActiveFigure(1, 0);
-                break;
-            case KeyEvent.VK_LEFT:
-                core.moveActiveFigure(-1, 0);
-                break;
-            case KeyEvent.VK_DOWN:
-                core.moveActiveFigure(0, 1);
-                break;
-            case KeyEvent.VK_UP:
-                core.rotateActiveFigure();
-                break;
-        }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-
     }
 }

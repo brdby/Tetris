@@ -1,5 +1,7 @@
 package com.haskellish.engine;
 
+import com.haskellish.scoring.Player;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -17,14 +19,15 @@ public class Core {
     private Queue<Figure> figureQueue = new ConcurrentLinkedQueue<>();
     private Figure activeFigure;
     private Random r = new Random();
+    private Player player;
 
-    public Core() {
+    public Core(Player player) {
         //setting first figures
         figureQueue.add(genFigure(INITIAL_X, INITIAL_Y));
         figureQueue.add(genFigure(INITIAL_X, INITIAL_Y));
         activeFigure = figureQueue.poll();
         figures.add(activeFigure);
-
+        this.player = player;
         start();
     }
 
@@ -41,7 +44,11 @@ public class Core {
     }
 
     private void changeActiveFigure() {
-        lineClear();
+        //clear lines and score
+        int clearedLines = lineClear();
+        player.addScore(clearedLines*200);
+
+        //change figure
         activeFigure = figureQueue.poll();
         figureQueue.add(genFigure(INITIAL_X, INITIAL_Y));
         figures.add(activeFigure);
@@ -126,7 +133,7 @@ public class Core {
             do {
                 figureFall = figureFall();
             } while (figureFall != 0);
-            clearedLines += lineClear();
+            clearedLines += lineClear()*2;
         }
         return clearedLines;
     }
